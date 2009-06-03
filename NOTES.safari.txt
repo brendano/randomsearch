@@ -1,0 +1,11 @@
+for Safari, yes, you have to hack the binary.
+http://www.macosxhints.com/article.php?story=20030514035516436
+
+matching string lengths, this works for me...
+
+1576,31161-34742
+http://%@.google.com/%@?q=%@&ie=UTF-8&oe=UTF-8
+http://localhost/randomsearch/_%@_%@zzzzz?q=%@
+
+4592,25829-27948
+http://%@.google.com/%@?q=%@&ie=UTF-8&oe=UTF-8
