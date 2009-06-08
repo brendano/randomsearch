@@ -59,20 +59,34 @@ class Opts(util.Struct):
     return h
 
 LASTFILE = "/tmp/last_randomsearch"
-def get_last_engine():
-  if os.path.exists(LASTFILE):
-    return open(LASTFILE).read().strip()
-  else:
-    return None
+try:
+  history = simplejson.load(open(LASTFILE))
+except:
+  history = []
 
-def save_last_engine(e):
+
+def save_history(q,e):
+  global history
+  history.append( [q,e] )
+  if len(history) > 10:
+    history = history[-10:]
   f = open(LASTFILE,'w')
-  print>>f, e
+  simplejson.dump(history, f)
   f.close()
-  
+
+def pick_next_engine(q):
+  already_used = set(e for (qh,e) in history if qh==q)
+  available = set(URLS.keys())
+  last = history[-1][1]
+  exclude = already_used | set([ last ])
+  if exclude >= available:
+    exclude = set([ last ])
+  return random.choice(list( available - exclude ))
+
 URLS = {
   'google': "http://www.google.com/search?client=safari&rls=en-us&q=QUERY&ie=UTF-8&oe=UTF-8",
   'bing': "http://www.bing.com/search?q=QUERY",
+  'yahoo': "http://search.yahoo.com/search?q=QUERY",
 }
 
 def application(environ, start_response):
@@ -99,9 +113,8 @@ def application(environ, start_response):
     yield "</html>"
     return
 
-  last_e = get_last_engine()
-  next_e = random.choice(list(set(URLS.keys()) - set([last_e])))
-  save_last_engine(next_e)
+  next_e = pick_next_engine(opts.q)
+  save_history(opts.q, next_e)
   
   url = URLS[next_e].replace('QUERY', urllib.quote_plus(util.stringify(opts.q, 'utf8')))
   
